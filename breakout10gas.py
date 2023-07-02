@@ -199,7 +199,7 @@ def eval():
     total_reward = 0
     max_reward = 0
     total_t = 0
-    state, info = env.reset()
+    state, info = eval_env.reset()
     #print("s1:",state.shape)
     state = trans(state)
     #print("s2:",state.shape)
@@ -217,11 +217,12 @@ def eval():
     frames.append(new_frame)
     frames.append(new_frame)
     frames.append(new_frame)
-    stacked_state = torch.stack(frames).unsqueeze(0)
+    stacked_state = torch.stack(frames)
     #print("stacked_state",stacked_state.shape)
     stacked_next_state = None
     for t in count():    
         action = evalselect_action(stacked_state)
+        #print("action" ,action.item())
         observation,reward ,terminated,truncated,_=eval_env.step(action.item())
         observation =trans(observation)
         observation =resize(observation)
@@ -230,13 +231,13 @@ def eval():
             next_state = None  
         else:
             #torch.stack(frames).unsqueeze(0).to(device) 
-            next_state = torch.tensor(observation, dtype=torch.float32, device=device).unsqueeze(0)
+            next_state = torch.tensor(observation, dtype=torch.float32, device=device)
             frames.pop(0)
             frames.append(next_state)
         # Move all tensors to the same device (if necessary) 
         reward_tensor= torch.tensor([reward],device=device)
         total_reward +=reward
-        frames[9] = frames[9].squeeze()      # 移除不必要的批次维度
+        #frames[9] = frames[9].squeeze()      # 移除不必要的批次维度
         stacked_next_state = torch.stack(frames).unsqueeze(0)
         stacked_state = stacked_next_state
         if done:
@@ -246,14 +247,14 @@ def eval():
             if total_reward > max_reward:
                 max_reward = total_reward
                 print(f'i_episode: {i_episode}, total_reward: {total_reward},max_reward: {max_reward}  ')
-                if max_reward > 925.0:
+                if max_reward > 1.0:
                     torch.save(policy_net.state_dict(), "modelbreakout10.pt")
                     print("save model")
             total_reward=0
             plot_durations()
             break
 for i_episode in range(num_episodes):  
-    if i_episode%EVAL ==10:
+    if i_episode%EVAL ==0:
         eval()
         
     # Initialize the environment and get its state
