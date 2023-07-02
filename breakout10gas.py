@@ -207,11 +207,6 @@ def eval():
     #print("s3:",state.shape)
     frames= []
     new_frame = torch.tensor(state, dtype=torch.float32, device=device)
-    
-    frames.append(new_frame)
-    observation,reward ,terminated,truncated,_=eval_env.step(3)
-    observation = trans(observation)
-    new_frame = torch.tensor(observation, dtype=torch.float32, device=device)
     frames.append(new_frame)
     frames.append(new_frame)
     frames.append(new_frame)
